@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FragShield – Semantic-Zone and Propagation-Aware Error Protection</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#fff;--tx:#1a1a22;--mu:#5d5d6b;--cd:#f4f0f5;--ln:#ddd5de;--pk:#c0268f;--vi:#7b2cbf}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0a0c;--tx:#f2f2f6;--mu:#a9a9b8;--cd:#17171f;--ln:#2e2e3b;--pk:#e23db5;--vi:#a56bf0}}
+:root[data-theme="dark"]{--bg:#0a0a0c;--tx:#f2f2f6;--mu:#a9a9b8;--cd:#17171f;--ln:#2e2e3b;--pk:#e23db5;--vi:#a56bf0}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}html{scroll-behavior:smooth;scroll-padding-top:64px}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:0 18px 60px}nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;gap:16px;align-items:center;padding:12px 18px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--ln);font-size:14px;overflow-x:auto;white-space:nowrap}
+nav b{margin-right:auto;font-size:16px}nav b i{color:var(--pk);font-style:normal}nav a{color:var(--mu);text-decoration:none}nav a:hover{color:var(--pk)}
+.hero{position:relative;overflow:hidden;margin-top:18px;border-radius:26px;background:#0a0a0c;color:#f2f2f6;padding:64px 28px 34px}.hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55}.hero>div{position:relative}
+h1{font-size:clamp(40px,9vw,84px);margin:0;letter-spacing:2px;line-height:1}h1 span{background:linear-gradient(90deg,#ff5cd1,#9b5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:28px;margin:58px 0 4px}p{margin:8px 0}.mu{color:var(--mu)}.hero .mu{color:#b9b9c8}.sub{font-size:20px;margin:12px 0}
+.pill{display:inline-block;border:1px solid #ffffff33;border-radius:99px;padding:3px 12px;margin:8px 8px 0 0;font-size:14px;color:#d8d8e4}
+.g{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:18px}.c{background:var(--cd);border:1px solid var(--ln);border-radius:16px;padding:16px}.hero .c{background:#ffffff12;border-color:#ffffff22}
+.big{font-size:36px;font-weight:800;color:var(--pk);line-height:1.1}.hero .big{color:#ff6fd8}
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.flow div{background:var(--vi);color:#fff;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;text-align:center;flex:1 1 110px;animation:p 3.5s infinite}.flow .n{background:var(--pk)}
+@keyframes p{50%{transform:translateY(-4px);filter:brightness(1.25)}}.rv{opacity:0;transform:translateY(26px);transition:.7s}.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv,.flow div{transition:none;animation:none;opacity:1;transform:none}}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:12px 0}label{font-size:14px;color:var(--mu)}label b{color:var(--tx)}input[type=range]{accent-color:var(--pk);width:200px}
+button,select{font:inherit;background:var(--cd);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px 12px;cursor:pointer}button.on{background:var(--pk);color:#fff;border-color:var(--pk)}
+.sv{overflow-x:auto}svg{max-width:100%;height:auto}svg text{fill:var(--mu);font-size:12px}.lg{display:flex;flex-wrap:wrap;gap:12px;font-size:14px;color:var(--mu)}.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.bar{display:flex;gap:2px;height:46px;margin:6px 0}.bar div{border-radius:6px;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:background .4s,flex .4s}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:7px 9px;border-bottom:1px solid var(--ln);text-align:left}th{color:var(--mu)}
+.fr{display:flex;flex-wrap:wrap;gap:3px;margin:10px 0}.fr b{width:19px;height:26px;border-radius:4px;font:11px/26px monospace;text-align:center;color:#fff;cursor:pointer;user-select:none}.fr b.x{outline:2px solid #ffd400;outline-offset:1px}
+.ok{color:#2a9d4a}.bad{color:#d9363e}.wn{color:#e08a00}ul{padding-left:20px}code{background:var(--cd);padding:2px 6px;border-radius:5px;font-size:14px}footer{margin-top:50px;color:var(--mu);font-size:14px}
+</style></head><body>
+<nav><b>FRAG<i>SHIELD</i></b><a href="#alloc">Allocator</a><a href="#prop">Propagation</a><a href="#lab">Packet lab</a><a href="#res">Live simulation</a><a href="#lim">Limits</a><a href="#network">Real UDP link</a><button id="th">◐</button></nav>
+<main>
+<div class="hero"><canvas id="bg"></canvas><div>
+<h1>FRAG<span>SHIELD</span></h1><p class="sub">Semantic-zone and propagation-aware error protection</p>
+
+<span class="pill">Same overhead budget</span><span class="pill">Exact DP allocator</span><span class="pill">Fault-injection propagation scoring</span><span class="pill">Live noisy-channel simulation</span>
+<div class="g" id="stats"></div></div></div>
+
+<section class="rv"><h2>The idea</h2><p>A packet mixes critical and optional data, and one corrupted field keeps hurting later states (filters, integrators, latched failsafes). FragShield spends a fixed redundancy budget where corruption would spread furthest.</p>
+<div class="flow"><div>Drone telemetry source</div><div class="n">Semantic Zone Mapper</div><div class="n">Propagation Scoring</div><div class="n">Redundancy-Budget Allocator</div><div>Protection Encoder</div><div>Noisy Channel</div><div>Decoder + Ground Station</div></div></section>
+
+<section id="alloc" class="rv"><h2>Live allocator</h2>
+<p class="mu">The FragShield dynamic-programming allocator, running in your browser on the propagation scores measured below. Drag a slider: the plan is recomputed exactly, and the live simulation re-runs when you release it.</p>
+<div class="ctl"><label>Budget: <b id="bv"></b><br><input type="range" id="bs" min="0" max="40" value="20"></label><label>Channel BER: <b id="pv"></b><br><input type="range" id="ps" min="0" max="1.7" step=".05" value="1"></label></div>
+<p><b>Classic UEP</b> <span class="mu">(whole fields, declared importance only)</span></p><div class="bar" id="b1"></div>
+<p><b>FragShield</b> <span class="mu">(fragments, importance × measured propagation)</span></p><div class="bar" id="b2"></div>
+<div class="lg" id="al"></div><div class="g" id="yd"></div></section>
+
+<section id="prop" class="rv"><h2>Measured error propagation</h2>
+<p class="mu">Fault injection, run in your browser: flip one bit in a fragment, keep running the ground-station model for 120 packets, and compare with the clean run. Bar = total damage of one flip.</p>
+<div class="ctl"><button id="rp">Re-measure on a new random mission</button><span class="mu" id="pt"></span></div><div class="sv" id="pb"></div></section>
+
+<section id="lab" class="rv"><h2>Live packet lab</h2>
+<p class="mu">Uses the budget and BER above. Click bits to corrupt them (yellow outline) or inject random errors, then see what the decoder recovers.</p>
+<div class="ctl"><span id="planb"></span><button id="rnd">Random errors (3%)</button><button id="clr">Clear</button></div>
+<div class="fr" id="frame"></div>
+<div class="lg"><span><i style="background:#8a8a95"></i>unprotected</span><span><i style="background:#4c78a8"></i>parity</span><span><i style="background:#2a9d4a"></i>Hamming SEC</span><span><i style="background:#c0268f"></i>SECDED</span></div>
+<div class="sv"><table><thead><tr><th>Field</th><th>Sent</th><th>Received</th><th>Result</th></tr></thead><tbody id="out"></tbody></table></div></section>
+
+<section id="res" class="rv"><h2>Live simulation</h2>
+<p class="mu">Each point: simulated drone missions sent packet by packet through a noisy channel with real Hamming/parity coding, decoded, and fed to the ground-station model. The graph is recomputed here, not loaded.</p>
+<div class="ctl"><label>Quality <select id="q"><option value="0">Fast (1 mission × 800 pkts)</option><option value="1" selected>Standard (3 × 1200)</option><option value="2">Thorough (6 × 2000)</option></select></label><button id="run">Run simulation</button><span class="mu" id="stt"></span></div>
+<div class="ctl"><span id="expb"></span><span id="metb"></span></div><div class="sv" id="chart"></div><div class="lg" id="leg"></div><p id="note" class="mu"></p>
+<div class="sv"><table><thead><tr><th>At your budget &amp; BER</th><th>Damage ↓</th><th>Critical ok ↑</th><th>Goodput ↑</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+
+
+<section id="network" class="rv"><h2>Real UDP network link</h2>
+<p class="mu">Unlike the browser simulation above, this panel sends an actual UDP datagram from this computer to a receiver computer. Run the Python receiver on Computer B and the local web bridge on Computer A first.</p>
+<div class="g">
+ <div class="c"><label>Receiver computer IP<br><input id="udpHost" type="text" value="192.168.1.20" placeholder="e.g. 192.168.1.25" style="width:100%;margin-top:6px"></label></div>
+ <div class="c"><label>UDP port<br><input id="udpPort" type="number" min="1" max="65535" value="5005" style="width:100%;margin-top:6px"></label></div>
+</div>
+<div class="ctl"><label style="width:100%">Message to transmit<br><textarea id="udpMessage" rows="3" maxlength="2000" style="width:100%;margin-top:6px;padding:10px;border:1px solid var(--ln);border-radius:8px;background:var(--cd);color:var(--tx);font:inherit">FragShield real UDP test packet</textarea></label></div>
+<div class="ctl"><label><input id="udpFlip" type="checkbox"> Inject one bit flip before transmission (tests SECDED correction)</label></div>
+<div class="ctl"><button id="udpSend">Send real UDP packet</button><span class="mu" id="udpStatus" role="status">Not connected yet.</span></div>
+<div class="c"><b>What this test proves</b><p class="mu">The browser sends a request to a local Python bridge, which emits one real UDP datagram. The receiver decodes byte-wise extended Hamming SECDED and checks a CRC32 checksum. UDP itself does not guarantee delivery, so check Computer B's receiver terminal for the received packet and decode result.</p></div>
+</section>
+
+<section id="lim" class="rv"><h2>Where it wins, where it doesn’t</h2><ul>
+<li><b>Wins:</b> tight budgets (about 5–20%): clearly less downstream damage than classic UEP at equal overhead.</li>
+<li><b>Ties or loses:</b> at larger budgets classic UEP catches up; bit-exact battery/altitude recovery is lower because their low bits are left bare on purpose. Drag the budget slider and watch.</li>
+<li><b>Caveats:</b> it is a simulation of a drone-telemetry link. This page re-implements the Python simulator in JavaScript with shorter missions, so numbers differ slightly from the repository’s 20-seed results; the damage model scores and evaluates (on different missions).</li></ul>
+<p>Full project: <code>python3 experiments/demo.py</code> · <code>python3 experiments/run_all.py</code></p></section>
+<footer>MIT licensed.</footer></main>
+<script>
+const $=i=>document.getElementById(i),LC={NONE:"#8a8a95",PARITY:"#4c78a8",SEC:"#2a9d4a",SECDED:"#c0268f"},Z={CRITICAL:8,IMPORTANT:4,MODERATE:2,LOW:.5},LV=["NONE","PARITY","SEC","SECDED"],RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const hr=k=>{let r=2;while((1<<r)-r-1<k)r++;return r},cost=(l,k)=>l=="NONE"?0:l=="PARITY"?1:hr(k)+(l=="SECDED"?1:0);
+function ed(l,k,p,fl,ho){const n=k+cost(l,k),fr=k/n;if(l=="NONE")return fl*k*p;let d=0,c=1;for(let j=1;j<=n;j++){c=c*(n-j+1)/j;const q=c*p**j*(1-p)**(n-j);
+ if(l=="PARITY")d+=q*(j%2?ho:fl*j*fr);else if(l=="SEC"){if(j>=2)d+=q*fl*j*fr}else{if(j==2)d+=q*ho;else if(j>=3)d+=q*fl*j*fr}}return d}
+function alloc(U,B,p){let dp=[0,...Array(B).fill(Infinity)];const ch=[];U.forEach(u=>{const nw=Array(B+1).fill(Infinity),pk=[];LV.forEach(l=>{const c=cost(l,u.w);if(c>B)return;const d=Z[u.z]*ed(l,u.w,p,u.fl,u.ho);
+ for(let b=0;b+c<=B;b++)if(dp[b]<Infinity&&dp[b]+d<nw[b+c]-1e-15){nw[b+c]=dp[b]+d;pk[b+c]=[l,b]}});dp=nw;ch.push(pk)});
+ let bb=0;dp.forEach((v,b)=>{if(v<dp[bb])bb=b});const out={};for(let i=U.length-1,b=bb;i>=0;i--){const[l,pb]=ch[i][b];out[U[i].n]=l;b=pb}return{lv:out,cost:bb}}
+// ---- packet schema
+const FLD=[["battery",0,8],["altitude",8,16],["gps_dlat",24,16],["gps_dlon",40,16],["temperature",56,8],["debug",64,32]],ZN={battery:"CRITICAL",altitude:"CRITICAL",gps_dlat:"IMPORTANT",gps_dlon:"IMPORTANT",temperature:"MODERATE",debug:"LOW"};
+const val=(b,f)=>{let v=0;for(let j=0;j<f[2];j++)v+=b[f[1]+j]*2**j;return v},VB=b=>FLD.map(f=>val(b,f)),toBits=v=>{const b=[];FLD.forEach((f,i)=>{for(let j=0;j<f[2];j++)b.push(Math.floor(v[i]/2**j)%2)});return b},par=a=>a.reduce((x,y)=>x^y,0);
+const FU=[];FLD.forEach(f=>{if(f[0]=="debug")FU.push({n:"debug",fd:"debug",s:f[1],w:f[2],z:"LOW"});else{const h=f[2]/2;FU.push({n:f[0]+".hi",fd:f[0],s:f[1]+h,w:h,z:ZN[f[0]]},{n:f[0]+".lo",fd:f[0],s:f[1],w:h,z:ZN[f[0]]})}});
+// ---- seeded drone-telemetry mission
+const rng=s=>()=>{s=s+1831565813|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296},sm=x=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x)},s16=v=>v>=32768?v-65536:v,cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+function mission(T,seed){const r=rng(seed),U=(a,b)=>a+(b-a)*r(),g=()=>Math.sqrt(-2*Math.log(1-r()))*Math.cos(6.2832*r());
+ const tk=U(.08,.12)*T,ld=U(.13,.17)*T,per=U(.15,.22)*T,p1=U(0,6.28),tc=U(.6,.73)*T,ec=U(.37,.6)*T,th=U(0,6.28),h0=U(0,6.28),v=[],b=[],pos=[];let x=0,y=0;
+ for(let t=0;t<T;t++){const ca=120+8*Math.sin(6.2832*t/per+p1);let al=t<tk?ca*sm(t/tk):ca;if(t>=T-ld)al=ca*(1-sm((t-(T-ld))/ld));al=Math.max(0,al+.15*g());
+  const ba=cl((t<tc?100-80*t/tc:20-12*(t-tc)/(T-tc))+.15*g(),0,100),te=38+6*t/T+1.5*Math.sin(6.2832*t/(T*.133))+31*Math.exp(-(((t-ec)/(T*.073))**2))+.1*g();
+  const sp=12*sm((t-T*.033)/(T*.067))*(1-sm((t-(T-ld))/(ld*.8))),a2=.6*Math.sin(6.2832*t/(T/2)+th)+h0,dl=Math.round(sp*Math.cos(a2)+.4*g()),dn=Math.round(sp*Math.sin(a2)+.4*g());x+=dl*.1;y+=dn*.1;pos.push([x,y]);
+  const vv=[cl(Math.round(ba*2.55),0,255),cl(Math.round(al*10),0,65535),dl&65535,dn&65535,cl(Math.round(te+40),0,255),Math.floor(r()*4294967296)];v.push(vv);b.push(toBits(vv))}return{T,v,b,pos}}
+// ---- ground station (where errors propagate): latched RTL failsafe, EMA filters, dead-reckoned GPS, over-temp alarm
+const G=()=>({a:null,t:null,x:0,y:0,l:0});
+function step(o,v,fix){const bt=v[0]/2.55,al=v[1]/10,te=v[4]-40;o.a=o.a==null?al:.7*o.a+.3*al;o.t=o.t==null?te:.8*o.t+.2*te;o.x+=s16(v[2])*.1;o.y+=s16(v[3])*.1;if(fix){o.x=fix[0];o.y=fix[1]}
+ if(bt<20)o.l=50;else if(o.l>0)o.l--;return[bt,o.a,o.x,o.y,o.t,o.l>0,o.t>70]}
+const dmg=(a,b)=>Math.min(1,Math.abs(a[0]-b[0])/20)+Math.min(1,Math.abs(a[1]-b[1])/20)+Math.min(1,Math.hypot(a[2]-b[2],a[3]-b[3])/50)+Math.min(1,Math.abs(a[4]-b[4])/10)+2*(a[5]!=b[5])+(a[6]!=b[6]);
+// ---- propagation scoring by fault injection
+function profile(M,trials,seed){const r=rng(seed),sn=[];let g=G();for(let t=0;t<M.T;t++){sn.push({...g});step(g,M.v[t],t%50?null:M.pos[t])}
+ const inj=(t0,bits)=>{const e={...sn[t0]},f={...sn[t0]};let s=0,c=0;for(let k=0;k<120;k++){const t=t0+k,fx=t%50?null:M.pos[t],d=dmg(step(e,k?M.v[t]:VB(bits),fx),step(f,M.v[t],fx));s+=d;c+=d>.01}return[s,c]};
+ return FU.map(u=>{let a=0,b=0,c=0;for(let i=0;i<trials;i++){const t0=1+Math.floor(r()*(M.T-121)),bt=M.b[t0].slice();bt[u.s+Math.floor(r()*u.w)]^=1;let q=inj(t0,bt);a+=q[0];b+=q[1];
+  const hb=M.b[t0].slice();for(let j=0;j<u.w;j++)hb[u.s+j]=M.b[t0-1][u.s+j];c+=inj(t0,hb)[0]}return{...u,im:a/trials,rd:b/trials,hi:c/trials}})}
+let FR,UF,UU,US;
+function setProfile(P){const ref=P.filter(u=>u.fd!="debug"),sc=ref.reduce((x,u)=>x+u.im,0)/ref.length||1;FR=P.map(u=>({...u,fl:u.im/sc,ho:u.hi/sc}));
+ UF=FD().map(fd=>{const a=FR.filter(f=>f.fd==fd),w=a.reduce((x,f)=>x+f.w,0),av=k=>a.reduce((x,f)=>x+f[k]*f.w,0)/w;return{n:fd,s:Math.min(...a.map(f=>f.s)),w,z:a[0].z,fl:1,ho:.35,mfl:av("fl"),mho:av("ho")}});
+ UU=FR.map(f=>({...f,mfl:f.fl,mho:f.ho}));US=FR.map(f=>({...f,fl:1,ho:.35,mfl:f.fl,mho:f.ho}))}
+const FD=()=>[...new Set(FU.map(f=>f.fd))],evalA=(U,lv,p)=>U.reduce((x,u)=>x+Z[u.z]*ed(lv[u.n],u.w,p,u.mfl,u.mho),0);
+function uni(B){let best=null;for(let m=1;m<=96;m++){const b=Math.floor(96/m),e=96%m,w=Array.from({length:m},(_,i)=>b+(i<e?1:0));if(w.reduce((x,k)=>x+cost("SEC",k),0)<=B)best=w}
+ if(!best)return[[0,96,"NONE"]];let a=0;return best.map(k=>{const s=[a,k,"SEC"];a+=k;return s})}
+const segsOf=(U,lv)=>[...U].sort((a,b)=>a.s-b.s).map(u=>[u.s,u.w,lv[u.n]]),barHtml=sg=>sg.map(([a,k,l])=>`<div title="bits ${a}–${a+k-1}: ${l}" style="flex:${k};background:${LC[l]}">${k>=8?l:""}</div>`).join("");
+function planFor(st,B,p){if(st=="none")return[[0,96,"NONE"]];if(st=="uniform")return uni(B);const U={uep:UF,semantic_only:US,fragshield:UU}[st];return segsOf(U,alloc(U,B,p).lv)}
+// ---- codes (real Hamming / extended Hamming / parity on bit arrays)
+function mk(level,k){if(level=="NONE")return{enc:d=>d.slice(),dec:w=>[w.slice(0,k),0]};if(level=="PARITY")return{enc:d=>[...d,par(d)],dec:w=>[w.slice(0,k),par(w)?2:0]};
+ const h=hr(k),cols=[];for(let c=3;cols.length<k;c++)if(c&(c-1))cols.push(c);const ex=level=="SECDED",syn=d=>d.reduce((s,b,j)=>b?s^cols[j]:s,0);
+ return{enc:d=>{const s=syn(d),w=[...d];for(let i=0;i<h;i++)w.push((s>>i)&1);if(ex)w.push(par(w));return w},
+ dec:w=>{const d=w.slice(0,k);let s=syn(d);for(let i=0;i<h;i++)s^=w[k+i]<<i;const ov=ex?par(w):0,fix=()=>{const j=cols.indexOf(s);if(j>=0){d[j]^=1;return[d,1]}return(s&(s-1))==0?[d,1]:[d,2]};
+  if(!ex)return s==0?[d,0]:fix();if(s==0)return ov?[d,1]:[d,0];return ov?fix():[d,2]}}}
+// ---- end-to-end simulation: encode -> noisy channel -> decode (hold on detection) -> ground station
+function sim(segs,p,M,seed){const cs=segs.map(([a,w,l])=>({a,w,c:mk(l,w)})),r=rng(seed*7919+13);let last=M.b[0],sent=0,good=0,crit=0,dm=0,E=G(),F=G();
+ for(let t=0;t<M.T;t++){const bits=M.b[t],got=[];cs.forEach(s=>{const w=s.c.enc(bits.slice(s.a,s.a+s.w));for(let j=0;j<w.length;j++)if(r()<p)w[j]^=1;sent+=w.length;const[d,st]=s.c.dec(w);got.push(...(st==2?last.slice(s.a,s.a+s.w):d))});
+  last=got;const v=VB(got),fx=t%50?null:M.pos[t];dm+=dmg(step(E,v,fx),step(F,M.v[t],fx));crit+=Math.abs(v[0]-M.v[t][0])<=3&&Math.abs(v[1]-M.v[t][1])<=10;let ok=0;for(let j=0;j<96;j++)ok+=got[j]==bits[j];good+=ok}
+ return[dm/M.T,crit/M.T,good/sent]}
+// ---- state + allocator panel + packet lab
+let B=19,p=.01,plan="FragShield",PL={},err=new Set(),frame=[],segs=[],LIVE={},ex="E1",me="dmg",sq={},rid=0;
+function recompute(){const pct=+$("bs").value;B=Math.floor(pct*96/100);p=10**(-3+ +$("ps").value);$("bv").textContent=pct+"% = "+B+" bits";$("pv").textContent=p.toFixed(4);
+ const a1=alloc(UF,B,p),a2=alloc(UU,B,p),s1=segsOf(UF,a1.lv),s2=segsOf(UU,a2.lv);$("b1").innerHTML=barHtml(s1);$("b2").innerHTML=barHtml(s2);
+ $("al").innerHTML=LV.map(l=>`<span><i style="background:${LC[l]}"></i>${l}</span>`).join("")+`<span>payload bits 0 → 95, left to right</span>`;
+ const d1=evalA(UF,a1.lv,p),d2=evalA(UU,a2.lv,p);$("yd").innerHTML=[[d1.toFixed(3),"UEP predicted damage"],[d2.toFixed(3),"FragShield predicted damage"],[d1>0?(r=>r>=0?"−"+r+"%":"+"+(-r)+"% (worse)")(Math.round((1-d2/d1)*100)):"–","FragShield vs UEP (model)"],[a1.cost+" / "+a2.cost,"bits spent: UEP / FragShield"]].map(x=>`<div class="c"><div class="big" style="font-size:28px">${x[0]}</div><div class="mu">${x[1]}</div></div>`).join("");
+ PL={"FragShield":s2,"Classic UEP":s1,"Uniform Hamming":uni(B),"No protection":[[0,96,"NONE"]]};setPlan(plan)}
+const FS=[200,1200,9,4,78,0xCAFEBABE],PV=[199,1198,10,4,78,0x12345678];
+function setPlan(k){plan=k;err.clear();const pay=toBits(FS);let off=0;frame=[];segs=PL[k].map(([a,w,lv])=>{const c=mk(lv,w),cw=c.enc(pay.slice(a,a+w)),s={a,k:w,lv,c,off,n:cw.length};frame.push(...cw);off+=cw.length;return s});
+ $("planb").innerHTML=Object.keys(PL).map(x=>`<button class="${x==k?"on":""}" data-k="${x}">${x}</button> `).join("");run()}
+function run(){const rx=frame.map((b,i)=>err.has(i)?b^1:b),prev=toBits(PV),got=[],st=[];
+ segs.forEach(s=>{const[d,t]=s.c.dec(rx.slice(s.off,s.off+s.n));st.push(t);got.push(...(t==2?prev.slice(s.a,s.a+s.k):d))});
+ $("frame").innerHTML=segs.map(s=>frame.slice(s.off,s.off+s.n).map((b,j)=>`<b data-i="${s.off+j}" class="${err.has(s.off+j)?"x":""}" style="background:${LC[s.lv]};opacity:${j<s.k?1:.6}">${rx[s.off+j]}</b>`).join("")+`<span style="width:8px"></span>`).join("");
+ const sb=toBits(FS),ov=(s,f)=>s.a<f[1]+f[2]&&f[1]<s.a+s.k;
+ $("out").innerHTML=FLD.map(f=>{const a=val(sb,f),b=val(got,f),inv=segs.some((s,i)=>ov(s,f)&&st[i]==2),cor=segs.some((s,i)=>ov(s,f)&&st[i]==1);
+  const r=inv?'<span class="wn">≈ detected, concealed with last value'+(a==b?' (happened to match)':'')+'</span>':a==b?`<span class="ok">✓ ${cor?"corrected":"intact"}</span>`:'<span class="bad">✗ corrupted, undetected</span>';
+  return`<tr><td>${f[0]}</td><td>${a}</td><td>${b}</td><td>${r}</td></tr>`}).join("")+`<tr><td colspan="4" class="mu">${frame.length}-bit frame = 96 payload + ${frame.length-96} redundancy bits</td></tr>`}
+$("planb").onclick=e=>{if(e.target.dataset.k)setPlan(e.target.dataset.k)};$("frame").onclick=e=>{let i=e.target.dataset.i;if(i!==undefined){i=+i;err.has(i)?err.delete(i):err.add(i);run()}};
+$("rnd").onclick=()=>{err.clear();frame.forEach((_,i)=>{if(Math.random()<.03)err.add(i)});run()};$("clr").onclick=()=>{err.clear();run()};
+function drawProp(){const m=Math.max(...FR.map(f=>f.im))||1,h=26,W=780;let s=`<svg viewBox="0 0 ${W} ${FR.length*h+8}" width="${W}">`;FR.forEach((f,i)=>{const w=f.im/m*470;s+=`<text x="0" y="${i*h+18}">${f.n}</text><rect x="130" y="${i*h+4}" width="${Math.max(w,1)}" height="18" rx="4" fill="#d62ea8"/><text x="${136+w}" y="${i*h+18}">${f.im.toFixed(1)} · radius ${f.rd.toFixed(0)} pkts</text>`});$("pb").innerHTML=s+"</svg>"}
+function measure(seed){const t0=performance.now();setProfile(profile(mission(1200,seed),60,seed+1));$("pt").textContent=`measured ${FU.length*120} fault injections in ${Math.round(performance.now()-t0)} ms (mission seed ${seed})`;drawProp()}
+$("rp").onclick=()=>{measure(Math.floor(Math.random()*1e6)+1);recompute();refresh()};
+// ---- live sweep + chart
+const C={uniform:"#4c78a8",uep:"#f58518",semantic_only:"#54a24b",fragshield:"#d62ea8",none:"#8a8a95"},NM={uniform:"Uniform Hamming",uep:"Classic UEP",semantic_only:"Semantic only (ablation)",fragshield:"FragShield",none:"No protection"},ST=["uniform","uep","semantic_only","fragshield"];
+const MT={dmg:"Downstream damage (lower is better)",crit:"Critical fields within ±1% / ±1 m (higher is better)",gp:"Goodput (higher is better)"},tick=()=>new Promise(r=>setTimeout(r));
+async function go(kind){kind=kind||ex;const my=sq[kind]=(sq[kind]||0)+1,qi=+$("q").value,S=[1,3,6][qi],T=[800,1200,2000][qi],pct=+$("bs").value,t0=performance.now(),
+ xs=kind=="E1"?[...new Set([5,10,15,20,25,30,40,pct])].sort((a,b)=>a-b):[.001,.003,.01,.02,.04],ms=[...Array(S)].map((_,i)=>mission(T,i+1)),res={x:xs,s:{},none:{dmg:[],crit:[],gp:[]},p,pct,kind,xl:kind=="E1"?"redundancy budget (% of payload), BER "+p.toFixed(4):"channel BER, budget "+pct+"%",
+ note:kind=="E1"?"Dashed = no protection. Live: "+S+" mission(s) × "+T+" packets per point.":"Dashed = no protection. Live: "+S+" mission(s) × "+T+" packets per point."};
+ ST.forEach(s=>res.s[s]={dmg:[],crit:[],gp:[]});const mean=(sg,pp)=>{let a=[0,0,0];ms.forEach((M,i)=>{const r=sim(sg,pp,M,i+1);a=a.map((x,k)=>x+r[k]/S)});return a},push=(o,a)=>{o.dmg.push(a[0]);o.crit.push(a[1]);o.gp.push(a[2])};let n=0;
+ for(const x of xs){const b=Math.floor((kind=="E1"?x:pct)*.96),pp=kind=="E1"?p:x;$("stt").textContent=`simulating ${++n}/${xs.length}…`;await tick();if(my!=sq[kind])return;
+  push(res.none,mean(planFor("none"),pp));ST.forEach(s=>push(res.s[s],mean(planFor(s,b,pp),pp)))}
+ LIVE[kind]=res;res.ms=Math.round(performance.now()-t0);res.pk=xs.length*5*S*T;$("stt").textContent=`done: ${res.pk.toLocaleString()} packets simulated live in ${(res.ms/1e3).toFixed(1)} s`;if(kind=="E1")stats();draw()}
+function stats(){const R=LIVE.E1,i=R.x.indexOf(R.pct),g=s=>R.s[s].dmg[i],r=(a,b)=>a>0?Math.round((1-b/a)*100):0;
+ $("stats").innerHTML=[[r(g("uep"),g("fragshield"))+"%","less damage than classic UEP at your budget"],[r(g("uniform"),g("fragshield"))+"%","less damage than uniform Hamming"],[r(R.none.dmg[i],g("fragshield"))+"%","less damage than no protection"],[R.pk.toLocaleString(),"packets simulated live in your browser"]].map(x=>`<div class="c"><div class="big">${x[0]}</div><div class="mu">${x[1]}</div></div>`).join("")}
+function btns(el,items,cur,fn){$(el).innerHTML=items.map(([k,l])=>`<button class="${k==cur?"on":""}" data-k="${k}">${l}</button> `).join("");$(el).onclick=e=>{if(e.target.dataset.k)fn(e.target.dataset.k)}}
+function draw(){btns("expb",[["E1","Budget sweep"],["E2","Channel BER sweep"]],ex,k=>{ex=k;LIVE[k]?draw():go(k)});btns("metb",Object.entries(MT).map(([k,v])=>[k,v.split(" (")[0]]),me,k=>{me=k;draw()});const E=LIVE[ex];if(!E)return;
+ const W=780,H=330,L=54,R=16,T=14,B2=44;let all=ST.flatMap(s=>E.s[s][me]).concat(E.none[me]),lo=Math.min(...all),hi=Math.max(...all);const pad=(hi-lo)*.08||.01;lo=Math.max(0,lo-pad);hi+=pad;
+ const n=E.x.length,X=i=>L+i*(W-L-R)/(n-1),Y=v=>T+(hi-v)/(hi-lo)*(H-T-B2),pl=a=>a.map((v,i)=>X(i)+","+Y(v)).join(" ");let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}">`;
+ for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="currentColor" opacity=".12"/><text x="${L-6}" y="${y+4}" text-anchor="end">${v.toFixed(2)}</text>`}
+ E.x.forEach((x,i)=>s+=`<text x="${X(i)}" y="${H-24}" text-anchor="middle">${x}</text>`);s+=`<text x="${W/2}" y="${H-6}" text-anchor="middle">${E.xl}</text><polyline points="${pl(E.none[me])}" fill="none" stroke="${C.none}" stroke-dasharray="6 4" stroke-width="2"/>`;
+ ST.forEach(k=>{s+=`<polyline points="${pl(E.s[k][me])}" fill="none" stroke="${C[k]}" stroke-width="${k=="fragshield"?4:2.2}"/>`+E.s[k][me].map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="4" fill="${C[k]}"><title>${NM[k]} @ ${E.x[i]}: ${v.toFixed(3)}</title></circle>`).join("")});
+ $("chart").innerHTML=s+"</svg>";$("leg").innerHTML=[...ST,"none"].map(k=>`<span><i style="background:${C[k]}"></i>${NM[k]}</span>`).join("");$("note").textContent=MT[me]+". "+E.note;
+ const R1=LIVE.E1;if(R1){const i=R1.x.indexOf(R1.pct);$("tb").innerHTML=["none",...ST].map(k=>{const o=k=="none"?R1.none:R1.s[k];return`<tr><td>${NM[k]}${k=="fragshield"?" ★":""}</td><td>${o.dmg[i].toFixed(3)}</td><td>${o.crit[i].toFixed(3)}</td><td>${o.gp[i].toFixed(3)}</td></tr>`}).join("")}}
+// ---- chrome: hero canvas, reveal, theme, wiring
+const cv=$("bg"),cx=cv.getContext("2d");let W0,H0,ys;function rs(){W0=cv.width=cv.offsetWidth||900;H0=cv.height=cv.offsetHeight||500;ys=Array.from({length:Math.floor(W0/18)},()=>Math.random()*H0)}rs();addEventListener("resize",rs);
+// Number-rain animation disabled; all other visuals and functionality are unchanged.
+const io=typeof IntersectionObserver!="undefined"?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.08}):null;document.querySelectorAll(".rv").forEach(e=>io?io.observe(e):e.classList.add("in"));
+$("th").onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark"};
+async function refresh(){const my=++rid;LIVE={};await go("E1");if(my==rid&&ex=="E2")await go("E2")}
+$("bs").oninput=$("ps").oninput=recompute;$("bs").onchange=$("ps").onchange=$("q").onchange=$("run").onclick=refresh;
+measure(12345);recompute();draw();refresh();
+
+// ---- real UDP link (requires fragshield_network.py on this computer)
+const udpSendButton=$("udpSend");
+if(udpSendButton){udpSendButton.onclick=async()=>{
+ const status=$("udpStatus"); udpSendButton.disabled=true; status.textContent="Sending via local Python bridge…";
+ try{
+  const host=$("udpHost").value.trim(), port=Number($("udpPort").value), message=$("udpMessage").value;
+  if(!host) throw new Error("Enter the receiver computer's IP address.");
+  if(!Number.isInteger(port)||port<1||port>65535) throw new Error("UDP port must be between 1 and 65535.");
+  if(!message) throw new Error("Enter a message to send.");
+  const response=await fetch("/api/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({host,port,message,flip:$("udpFlip").checked})});
+  const data=await response.json(); if(!response.ok||!data.ok) throw new Error(data.error||"Send failed.");
+  status.textContent=`UDP datagram sent · ${data.payload_bytes} payload bytes · ${data.codewords} SECDED codewords${data.flip_injected?" · one bit flip injected":""}. Check receiver terminal.`;
+ }catch(e){status.textContent="Could not send: "+e.message+(location.protocol==="file:"?" Open this page through the Python web bridge, not as a file.":"");}
+ finally{udpSendButton.disabled=false;}
+};}
+
+</script></body></html>
